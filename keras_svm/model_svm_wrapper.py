@@ -205,7 +205,7 @@ class ModelSVMWrapper():
         :return: The layer to split on: from where the svm must replace the existing model.
         :raises ValueError: If not enough layers exist for a good split (at least two required)
         """
-        if len(self.model.layers < 2):
+        if len(self.model.layer) < 2:
             raise ValueError('self.layers to small for a relevant split')
 
         for layer in self.model.layers:
