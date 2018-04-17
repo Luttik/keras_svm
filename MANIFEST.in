@@ -1,0 +1,8 @@
+# Include the README
+include *.md
+
+# Include the data files
+recursive-include data *
+
+include *.py
+include *.txt
