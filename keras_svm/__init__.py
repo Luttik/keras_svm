@@ -1,3 +1,3 @@
-from .sequential_with_svm import SequentialWithSvm
+from .model_svm_wrapper import ModelSVMWrapper
 
-__all__ = ["SequentialWithSvm"]
+__all__ = ["ModelSVMWrapper"]

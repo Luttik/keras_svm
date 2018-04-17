@@ -1,8 +1,8 @@
-from keras.models import Sequential, Model
+from keras.models import Model
 import sklearn
 
 
-class SequentialWithSvm(Sequential):
+class ModelSVMWrapper():
     """
     Linear stack of layers with the option to replace the end of the stack with a Support Vector Machine
     # Arguments
@@ -10,14 +10,18 @@ class SequentialWithSvm(Sequential):
         svm: The Support Vector Machine to use.
     """
 
-    def __init__(self, layers=None, name=None, svm=None):
-        super().__init__(layers, name)
+    def __init__(self, model, svm=None):
+        super().__init__()
 
+        self.model = model
         self.intermediate_model = None  # type: Model
         self.svm = svm  # type: sklearn.svm.base.BaseSVC
 
         if svm is None:
             self.svm = sklearn.svm.SVC(kernel='linear')
+
+    def add(self, layer):
+        return self.model.add(layer)
 
     def fit(self, x=None, y=None, batch_size=None, epochs=1, verbose=1, callbacks=None, validation_split=0.,
             validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0,
@@ -110,11 +114,11 @@ class SequentialWithSvm(Sequential):
             ValueError: In case of mismatch between the provided input data
                 and what the model expects.
         """
-        fit = super().fit(x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle,
-                          class_weight, sample_weight, initial_epoch, steps_per_epoch, validation_steps, **kwargs)
+        fit = self.model.fit(x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle,
+                             class_weight, sample_weight, initial_epoch, steps_per_epoch, validation_steps, **kwargs)
 
         # Store intermediate model
-        self.intermediate_model = Model(inputs=self.input,
+        self.intermediate_model = Model(inputs=self.model.input,
                                         outputs=self.__get_split_layer())
 
         # Use output of intermediate model to train SVM
@@ -160,38 +164,6 @@ class SequentialWithSvm(Sequential):
 
         return accuracy
 
-    def evaluate_model_without_svm(self, x=None, y=None, batch_size=None, verbose=1, sample_weight=None, steps=None):
-        """
-        Computes the loss on some input data, batch by batch.
-        Based solely on the keras model and ignores the svm variant
-
-        # Arguments
-            x: input data, as a Numpy array or list of Numpy arrays
-                (if the model has multiple inputs).
-                `x` can be `None` (default) if feeding from
-                framework-native tensors (e.g. TensorFlow data tensors).
-            y: labels, as a Numpy array.
-                `y` can be `None` (default) if feeding from
-                framework-native tensors (e.g. TensorFlow data tensors).
-            batch_size: Integer. If unspecified, it will default to 32.
-            verbose: verbosity mode, 0 or 1.
-            sample_weight: sample weights, as a Numpy array.
-            steps: Integer or `None`.
-                Total number of steps (batches of samples)
-                before declaring the evaluation round finished.
-                Ignored with the default value of `None`.
-
-        # Returns
-            Scalar test loss (if the model has no metrics)
-            or list of scalars (if the model computes other metrics).
-            The attribute `model.metrics_names` will give you
-            the display labels for the scalar outputs.
-
-        # Raises
-            RuntimeError: if the model was never compiled.
-        """
-        return super().evaluate(x, y, batch_size, verbose, sample_weight, steps)
-
     def predict(self, x, batch_size=None, verbose=0, steps=None):
         """
         Computes the loss on some input data, batch by batch.
@@ -226,25 +198,6 @@ class SequentialWithSvm(Sequential):
 
         return output
 
-    def predict_without_svm(self, x, batch_size=None, verbose=0, steps=None):
-        """
-        Generates output based on the keras model, ignoring the SVM output for the input samples.
-
-        The input samples are processed batch by batch.
-
-        # Arguments
-            x: the input data, as a Numpy array.
-            batch_size: Integer. If unspecified, it will default to 32.
-            verbose: verbosity mode, 0 or 1.
-            steps: Total number of steps (batches of samples)
-                before declaring the prediction round finished.
-                Ignored with the default value of `None`.
-
-        # Returns
-            A Numpy array of predictions.
-        """
-        return super().predict(x, batch_size, verbose, steps)
-
     def __get_split_layer(self):
         """
         Gets the layer to split on either "split_layer" or the second to last layer.
@@ -252,12 +205,12 @@ class SequentialWithSvm(Sequential):
         :return: The layer to split on: from where the svm must replace the existing model.
         :raises ValueError: If not enough layers exist for a good split (at least two required)
         """
-        if len(self.layers < 2):
+        if len(self.model.layers < 2):
             raise ValueError('self.layers to small for a relevant split')
 
-        for layer in self.layers:
+        for layer in self.model.layers:
             if layer.name == "split_layer":
                 return layer
 
         # if no specific cut of point is specified we can assume we need to remove only the last (softmax) layer
-        return self.layers[-2]
+        return self.model.layers[-2]
