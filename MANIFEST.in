@@ -6,3 +6,4 @@ recursive-include data *
 
 include *.py
 include *.txt
+include LICENSE
