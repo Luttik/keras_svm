@@ -1,8 +1,9 @@
 from keras.models import Model
 import sklearn
+from keras.utils import to_categorical
 
 
-class ModelSVMWrapper():
+class ModelSVMWrapper:
     """
     Linear stack of layers with the option to replace the end of the stack with a Support Vector Machine
     # Arguments
@@ -114,12 +115,13 @@ class ModelSVMWrapper():
             ValueError: In case of mismatch between the provided input data
                 and what the model expects.
         """
-        fit = self.model.fit(x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle,
-                             class_weight, sample_weight, initial_epoch, steps_per_epoch, validation_steps, **kwargs)
+        fit = self.model.fit(x, to_categorical(y), batch_size, epochs, verbose, callbacks, validation_split,
+                             validation_data, shuffle, class_weight, sample_weight, initial_epoch, steps_per_epoch,
+                             validation_steps, **kwargs)
 
         # Store intermediate model
         self.intermediate_model = Model(inputs=self.model.input,
-                                        outputs=self.__get_split_layer())
+                                        outputs=self.__get_split_layer().output)
 
         # Use output of intermediate model to train SVM
         intermediate_output = self.intermediate_model.predict(x)
@@ -127,7 +129,7 @@ class ModelSVMWrapper():
 
         return fit
 
-    def evaluate(self, x=None, y=None, batch_size=None, verbose=1, sample_weight=None, steps=None):
+    def evaluate(self, x=None, y=None, batch_size=None, verbose=1, steps=None):
         """
         Computes the accuracy on some input data, batch by batch.
 
@@ -205,7 +207,7 @@ class ModelSVMWrapper():
         :return: The layer to split on: from where the svm must replace the existing model.
         :raises ValueError: If not enough layers exist for a good split (at least two required)
         """
-        if len(self.model.layers) < 2:
+        if len(self.model.layers) < 3:
             raise ValueError('self.layers to small for a relevant split')
 
         for layer in self.model.layers:
@@ -213,4 +215,4 @@ class ModelSVMWrapper():
                 return layer
 
         # if no specific cut of point is specified we can assume we need to remove only the last (softmax) layer
-        return self.model.layers[-2]
+        return self.model.layers[-3]
