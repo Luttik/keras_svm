@@ -1,23 +1,8 @@
-"""
-A setuptools based setup module.
-
-See:
-https://packaging.python.org/en/latest/distributing.html
-https://github.com/pypa/sampleproject
-
-TO PUSH:
-rm -r dist/*
-tox
-python setup.py bdist_wheel --universal
-python setup.py sdist
-twine upload dist/*
-"""
-
 from setuptools import setup, find_packages
 
 setup(
     name='keras_svm',
-    version='1.0.0b6',
+    version='1.0.0b8',
     description='A model to use keras models with Support Vector Machines',
     url='https://github.com/Luttik/keras_svm/tree/master',  # Optional
     author='Daan Luttik',  # Optional

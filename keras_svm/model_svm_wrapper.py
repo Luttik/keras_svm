@@ -1,5 +1,5 @@
 from keras.models import Model
-import sklearn
+from sklearn.svm import SVC
 from keras.utils import to_categorical
 
 
@@ -16,10 +16,10 @@ class ModelSVMWrapper:
 
         self.model = model
         self.intermediate_model = None  # type: Model
-        self.svm = svm  # type: sklearn.svm.base.BaseSVC
+        self.svm = svm
 
         if svm is None:
-            self.svm = sklearn.svm.SVC(kernel='linear')
+            self.svm = SVC(kernel='linear')
 
     def add(self, layer):
         return self.model.add(layer)
