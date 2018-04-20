@@ -10,7 +10,6 @@ class ModelSVMWrapper:
         layers: list of layers to add to the model.
         svm: The Support Vector Machine to use.
     """
-
     def __init__(self, model, svm=None):
         super().__init__()
 
@@ -119,15 +118,17 @@ class ModelSVMWrapper:
                              validation_data, shuffle, class_weight, sample_weight, initial_epoch, steps_per_epoch,
                              validation_steps, **kwargs)
 
+        self.__fit_svm(x, y, self.__get_split_layer())
+
+        return fit
+
+    def __fit_svm(self, x, y, split_layer):
         # Store intermediate model
         self.intermediate_model = Model(inputs=self.model.input,
-                                        outputs=self.__get_split_layer().output)
-
+                                        outputs=split_layer.output)
         # Use output of intermediate model to train SVM
         intermediate_output = self.intermediate_model.predict(x)
         self.svm.fit(intermediate_output, y)
-
-        return fit
 
     def evaluate(self, x=None, y=None, batch_size=None, verbose=1, steps=None):
         """
