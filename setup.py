@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='keras_svm',
-    version='1.0.0b8',
+    version='1.0.0b10',
     description='A model to use keras models with Support Vector Machines',
     url='https://github.com/Luttik/keras_svm/tree/master',  # Optional
     author='Daan Luttik',  # Optional

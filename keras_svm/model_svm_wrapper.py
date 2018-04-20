@@ -118,11 +118,27 @@ class ModelSVMWrapper:
                              validation_data, shuffle, class_weight, sample_weight, initial_epoch, steps_per_epoch,
                              validation_steps, **kwargs)
 
-        self.__fit_svm(x, y, self.__get_split_layer())
+        self.fit_svm(x, y, self.__get_split_layer())
 
         return fit
 
-    def __fit_svm(self, x, y, split_layer):
+    def fit_svm(self, x, y, split_layer):
+        """
+        Fits the SVM on the data without changing the under laying neural network
+        # Arguments
+            x: Numpy array of training data.
+                If the input layer in the model is named, you can also pass a
+                dictionary mapping the input name to a Numpy array.
+                `x` can be `None` (default) if feeding from
+                framework-native tensors (e.g. TensorFlow data tensors).
+            y: Numpy array of target (label) data.
+                If the output layer in the model is named, you can also pass a
+                dictionary mapping the output name to a Numpy array.
+                `y` can be `None` (default) if feeding from
+                framework-native tensors (e.g. TensorFlow data tensors).
+            split_layer:
+                The layer to split on
+        """
         # Store intermediate model
         self.intermediate_model = Model(inputs=self.model.input,
                                         outputs=split_layer.output)
